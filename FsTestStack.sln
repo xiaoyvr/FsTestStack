@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsTestStack.AspNetCore", "src\FsTestStack.AspNetCore\FsTestStack.AspNetCore.fsproj", "{8B539569-9971-41A0-B239-31F14125B5C1}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsTestStack.Test", "test\FsTestStack.Test\FsTestStack.Test.fsproj", "{068FD347-DEAB-4F86-AD2C-7270A3B4BD46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{8B539569-9971-41A0-B239-31F14125B5C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B539569-9971-41A0-B239-31F14125B5C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B539569-9971-41A0-B239-31F14125B5C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{068FD347-DEAB-4F86-AD2C-7270A3B4BD46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{068FD347-DEAB-4F86-AD2C-7270A3B4BD46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{068FD347-DEAB-4F86-AD2C-7270A3B4BD46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{068FD347-DEAB-4F86-AD2C-7270A3B4BD46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

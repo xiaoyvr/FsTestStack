@@ -6,3 +6,6 @@ nuget Autofac.Extensions.DependencyInjection
 nuget FluentNHibernate
 nuget FSharp.Core
 nuget Microsoft.AspNetCore.TestHost
+nuget Microsoft.NET.Test.Sdk
+nuget xunit
+nuget xunit.runner.visualstudio
