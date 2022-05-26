@@ -1,0 +1,4 @@
+Autofac.Extensions.DependencyInjection
+FSharp.Core
+Microsoft.AspNetCore.TestHost
+FluentNHibernate

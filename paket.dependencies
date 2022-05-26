@@ -1,0 +1,8 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+framework: auto-detect
+nuget Autofac.Extensions.DependencyInjection
+nuget FluentNHibernate
+nuget FSharp.Core
+nuget Microsoft.AspNetCore.TestHost
