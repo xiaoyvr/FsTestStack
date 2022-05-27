@@ -2,6 +2,7 @@
 
 open System
 open System.Data.Common
+open System.Runtime.InteropServices
 open FluentNHibernate.Cfg
 open FluentNHibernate.Cfg.Db
 open NHibernate
@@ -25,7 +26,8 @@ type InMemoryDb(sessionFactory: ISessionFactory, dbConnection: DbConnection) =
       (sessionFactory :> IDisposable).Dispose()
 
 
-type InMemoryDbFactory<'T>() =
+type InMemoryDbFactory(configMapping: MappingConfiguration -> unit) =
+
   let PatchColumn (column: ISelectable) =
     match column with
       | :? Column as c ->
@@ -40,6 +42,7 @@ type InMemoryDbFactory<'T>() =
       (p.Value :?> SimpleValue).TypeName <- "datetime"
     p.ColumnIterator |> Seq.iter PatchColumn
 
+
   let PatchConfig (cfg: Configuration) =
     cfg.ClassMappings |> Seq.iter (fun cm -> cm.PropertyIterator |> Seq.iter PatchProperty )
     cfg
@@ -52,15 +55,18 @@ type InMemoryDbFactory<'T>() =
                     // .Raw("connection.release", "on_close")
   let configuration = Fluently.Configure()
                         .Database(sqliteCfg)
-                        .Mappings(fun m -> m.FluentMappings
-                                             .AddFromAssemblyOf<'T>()
-                                           |> ignore)
+                        .Mappings(configMapping)
                         .BuildConfiguration() // |> PatchConfig
+                        
+  
   member this.Create() =
     let sessionFactory = configuration.BuildSessionFactory()
     let dbConnection = (sessionFactory :?> ISessionFactoryImplementor).ConnectionProvider.GetConnection()
     SchemaExport(configuration).Execute(false, true, false, dbConnection, null)
     new InMemoryDb(sessionFactory, dbConnection)
+  new (configMapping: Action<MappingConfiguration>, [<Optional>]o) = 
+    InMemoryDbFactory configMapping.Invoke
+    
 
 //[<Extension>]
 //type Extensions =

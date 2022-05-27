@@ -38,16 +38,21 @@ type TestHttpServer<'TScope> internal (host: IHost, castScope) =
       host.Dispose()
       GC.SuppressFinalize(this)
 
+type ConfigBuilder = WebApplicationBuilder -> WebApplicationBuilder
+type ConfigApp = WebApplication -> WebApplication
+
 module private TestHttpServer =
-  let New<'TScope> configBuilder configApp castScope =
-    let builder = WebApplication.CreateBuilder()
-    builder.WebHost.UseTestServer() |> ignore
-    builder.Logging.AddFilter<ConsoleLoggerProvider>(fun lb -> lb >= LogLevel.Warning) |> ignore
-    configBuilder(builder) |> ignore
-    let host = builder.Build()
-    configApp(host) |> ignore
-    host.Start()
-    new TestHttpServer<'TScope>(host, castScope)    
+  let New<'TScope> (configBuilder: ConfigBuilder) (configApp: ConfigApp) castScope =
+    WebApplication.CreateBuilder()
+    |> (fun b ->
+      b.WebHost.UseTestServer() |> ignore
+      b.Logging.AddFilter<ConsoleLoggerProvider>(fun lb -> lb >= LogLevel.Warning) |> ignore
+      configBuilder(b) |> ignore
+      b.Build())
+    |> configApp
+    |> (fun h ->
+        h.Start()
+        new TestHttpServer<'TScope>(h, castScope))
 
 type IContainerType<'TContainer, 'TScope> =
   abstract member CastScope : IServiceScope -> 'TScope
@@ -55,9 +60,8 @@ type IContainerType<'TContainer, 'TScope> =
   abstract member ConfigApp : WebApplication -> WebApplication
 
 type ApiFactFactory<'TContainer, 'TScope> (containerType: IContainerType<'TContainer, 'TScope>) =
-
   member this.Launch configBuilder configApp =
     TestHttpServer.New<'TScope> (containerType.ConfigBuilder >> configBuilder) (containerType.ConfigApp >> configApp) containerType.CastScope
 
-  member this.CSLaunch (configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, configApp: Func<WebApplication,WebApplication>) =
+  member this.CSLaunch (configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, configApp: Func<WebApplication, WebApplication>) =
     this.Launch configBuilder.Invoke configApp.Invoke

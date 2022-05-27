@@ -8,6 +8,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsTestStack.AspNetCore.Auto
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsTestStack.InMemoryDb.NHibernate", "src\FsTestStack.InMemoryDb.NHibernate\FsTestStack.InMemoryDb.NHibernate.fsproj", "{BF4838D3-2053-4FE2-A2F1-2749A8C34071}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FsTestStack.Test.CSharp", "test\FsTestStack.Test.CSharp\FsTestStack.Test.CSharp.csproj", "{64A1FB9E-47C3-4E67-8580-6DB868EDD32E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{BF4838D3-2053-4FE2-A2F1-2749A8C34071}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF4838D3-2053-4FE2-A2F1-2749A8C34071}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF4838D3-2053-4FE2-A2F1-2749A8C34071}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64A1FB9E-47C3-4E67-8580-6DB868EDD32E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64A1FB9E-47C3-4E67-8580-6DB868EDD32E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64A1FB9E-47C3-4E67-8580-6DB868EDD32E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64A1FB9E-47C3-4E67-8580-6DB868EDD32E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,15 +1,13 @@
 namespace FsTestStack.AspNetCore.Default
 
-open System
 open FsTestStack.AspNetCore
 open Microsoft.Extensions.DependencyInjection
-open Microsoft.AspNetCore.TestHost
 
 
 type private DefaultContainer() =
   interface IContainerType<IServiceCollection, IServiceScope> with
     member this.CastScope scope = scope
-    member this.ConfigBuilder b  = b
+    member this.ConfigBuilder b = b
     member this.ConfigApp a  = a
 
 
