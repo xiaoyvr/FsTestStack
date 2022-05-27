@@ -1,3 +1,7 @@
 xunit.runner.visualstudio
 xunit
 Microsoft.NET.Test.Sdk
+coverlet.collector
+FSharp.Core
+System.Data.SQLite.Core import_targets: true
+System.Net.Http.Json

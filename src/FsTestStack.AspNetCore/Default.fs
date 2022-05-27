@@ -8,12 +8,9 @@ open Microsoft.AspNetCore.TestHost
 
 type private DefaultContainer() =
   interface IContainerType<IServiceCollection, IServiceScope> with
-    member this.CastScope scope =
-      scope
-    member this.ConfigHost b =
-      b
-    member this.ConfigWebHost b configTestContainer =
-      b.ConfigureTestContainer(configTestContainer)
+    member this.CastScope scope = scope
+    member this.ConfigBuilder b  = b
+    member this.ConfigApp a  = a
 
 
  type DefaultApiFactFactory() =

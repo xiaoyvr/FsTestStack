@@ -1,15 +1,15 @@
 ﻿namespace FsTestStack.AspNetCore
 
 open System
+open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.AspNetCore.Hosting.Server
-open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.Console
 
-type ScopeCustomizer<'TContainer, 'TScope> internal (newScope) =
+type ScopeCustomizer<'TContainer, 'TScope> (newScope) =
   let customizeList = System.Collections.Generic.List<'TContainer -> unit>();
   member x.Dirty =
     customizeList.Count > 0
@@ -22,7 +22,9 @@ type ScopeCustomizer<'TContainer, 'TScope> internal (newScope) =
   member x.CSTake (action: Action<'TContainer>) =
     customizeList.Add action.Invoke
 
-type TestHttpServer<'TScope> internal (server: TestServer, host: IHost, castScope) =
+type TestHttpServer<'TScope> internal (host: IHost, castScope) =
+  
+  let server = host.Services.GetRequiredService<IServer>() :?> TestServer
   member this.CreateScope(): 'TScope =
       server.Services.CreateScope() |> castScope
 
@@ -37,35 +39,25 @@ type TestHttpServer<'TScope> internal (server: TestServer, host: IHost, castScop
       GC.SuppressFinalize(this)
 
 module private TestHttpServer =
-  let New<'TScope> (configHost: IHostBuilder -> IHostBuilder) (configWebHost: IWebHostBuilder -> IWebHostBuilder) castScope =
-    configHost(Host.CreateDefaultBuilder())
-      .ConfigureWebHostDefaults(fun x ->
-          x.UseTestServer()
-            .ConfigureLogging(fun log ->
-              log.AddFilter<ConsoleLoggerProvider>(fun lb -> lb >= LogLevel.Warning) |> ignore)
-          |> configWebHost |> ignore)
-    |> fun hostBuilder -> hostBuilder.Start()
-    |> fun host -> new TestHttpServer<'TScope>(host.Services.GetRequiredService<IServer>() :?> TestServer,
-                                               host, castScope)
+  let New<'TScope> configBuilder configApp castScope =
+    let builder = WebApplication.CreateBuilder()
+    builder.WebHost.UseTestServer() |> ignore
+    builder.Logging.AddFilter<ConsoleLoggerProvider>(fun lb -> lb >= LogLevel.Warning) |> ignore
+    configBuilder(builder) |> ignore
+    let host = builder.Build()
+    configApp(host) |> ignore
+    host.Start()
+    new TestHttpServer<'TScope>(host, castScope)    
 
 type IContainerType<'TContainer, 'TScope> =
   abstract member CastScope : IServiceScope -> 'TScope
-  abstract member ConfigHost : IHostBuilder -> IHostBuilder
-  abstract member ConfigWebHost : IWebHostBuilder -> ('TContainer -> unit) ->IWebHostBuilder
-
-
+  abstract member ConfigBuilder : WebApplicationBuilder -> WebApplicationBuilder
+  abstract member ConfigApp : WebApplication -> WebApplication
 
 type ApiFactFactory<'TContainer, 'TScope> (containerType: IContainerType<'TContainer, 'TScope>) =
 
-  member this.Launch (configWebHost: IWebHostBuilder -> IWebHostBuilder) (configTestContainer: 'TContainer -> unit) =
-    TestHttpServer.New<'TScope>
-      containerType.ConfigHost
-      (fun b -> containerType.ConfigWebHost b configTestContainer |> configWebHost)
-      containerType.CastScope
+  member this.Launch configBuilder configApp =
+    TestHttpServer.New<'TScope> (containerType.ConfigBuilder >> configBuilder) (containerType.ConfigApp >> configApp) containerType.CastScope
 
-  member this.CSLaunch (configWebHost: Func<IWebHostBuilder, IWebHostBuilder>, configTestContainer: Action<'TContainer>) =
-    this.Launch configWebHost.Invoke configTestContainer.Invoke
-
-  member this.CSLaunch (configWebHost: Func<IWebHostBuilder, IWebHostBuilder>) =
-    this.Launch configWebHost.Invoke (fun _ -> ())
-
+  member this.CSLaunch (configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, configApp: Func<WebApplication,WebApplication>) =
+    this.Launch configBuilder.Invoke configApp.Invoke

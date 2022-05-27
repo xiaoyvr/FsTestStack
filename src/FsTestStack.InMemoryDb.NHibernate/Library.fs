@@ -1,12 +1,9 @@
-namespace FsTestStack.AspNetCore.InMemoryDb
+﻿namespace FsTestStack.AspNetCore.InMemoryDb
 
 open System
 open System.Data.Common
-open System.Runtime.CompilerServices
 open FluentNHibernate.Cfg
 open FluentNHibernate.Cfg.Db
-open Microsoft.AspNetCore.Hosting
-open Microsoft.Extensions.DependencyInjection
 open NHibernate
 open NHibernate.Cfg
 open NHibernate.Engine
@@ -65,9 +62,9 @@ type InMemoryDbFactory<'T>() =
     SchemaExport(configuration).Execute(false, true, false, dbConnection, null)
     new InMemoryDb(sessionFactory, dbConnection)
 
-[<Extension>]
-type Extensions =
-  [<Extension>]
-  static member UseInMemoryDb (b: IWebHostBuilder) (db:InMemoryDb) =
-    b.ConfigureServices(fun sc -> sc.AddScoped<ISession>(fun c -> db.CreateSession() ) |> ignore )
-
+//[<Extension>]
+//type Extensions =
+//  [<Extension>]
+//  static member UseInMemoryDb (b: IWebHostBuilder) (db:InMemoryDb) =
+//    b.ConfigureServices(fun sc -> sc.AddScoped<ISession>(fun c -> db.CreateSession() ) |> ignore )
+//

@@ -11,10 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ApiFactFactory.fs" />
-    <Compile Include="Autofac.fs" />
     <Compile Include="Default.fs" />
-    <Compile Include="InMemoryDbFactory.fs" />
-    <Compile Include="Interceptors.fs" />
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
