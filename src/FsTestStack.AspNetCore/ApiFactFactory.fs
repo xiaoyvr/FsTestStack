@@ -1,6 +1,7 @@
 ﻿namespace FsTestStack.AspNetCore
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Runtime.InteropServices
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.TestHost
@@ -57,26 +58,32 @@ module private TestHttpServer =
         new TestHttpServer<'TScope>(h, castScope))
     
 module Configurators =
+  [<NotNull>]
   let ConfigServices (config: Action<IServiceCollection>) : Func<WebApplicationBuilder, WebApplicationBuilder> =
     Func<_,_>(fun (b:WebApplicationBuilder) -> config.Invoke(b.Services); b)
 
-module FuncConvert =    
+module FuncConvert =  
   let rec Compose<'T1> (funcList: ('T1 -> 'T1) list) =
     match funcList with
       | [] -> id
       | x :: xs -> x >> Compose xs
-  let ComposeFunc<'T1> ([<ParamArray>]funcArray: Func<'T1, 'T1> array) =
+      
+  [<NotNull>]
+  let ComposeFunc<'T1> ([<ParamArray>]funcArray: Func<'T1, 'T1> array)=
     funcArray
     |> List.ofArray
     |> List.map (fun func -> func.Invoke)
     |> Compose
     |> fun t1 -> Func<'T1,'T1>(t1)
     
-  let DefaultFunc2 def (func:Func<_, _>)  = match func with null -> def | _ -> func.Invoke
+  let DefaultFunc2 def (func:Func<_, _>)  =
+    match func with null -> def | _ -> func.Invoke
   let FuncId<'T>(w:'T) :'T = w;
   
 open FuncConvert
+
 type ApiFactFactory<'TContainer, 'TScope> (configBuilder: ConfigBuilder, configApp: ConfigApp, castScope: IServiceScope -> 'TScope) =
-  member this.Launch([<Optional>]launchConfigBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, [<Optional>]launchConfigApp: Func<WebApplication, WebApplication>) =
+  member this.Launch([<Optional>]launchConfigBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
+                     [<Optional>]launchConfigApp: Func<WebApplication, WebApplication>) : [<NotNull>]_=
     TestHttpServer.New<'TScope> (configBuilder >> (DefaultFunc2 id launchConfigBuilder)) (configApp >> (DefaultFunc2 id launchConfigApp)) castScope
   

@@ -2,6 +2,7 @@
 
 open System
 open System.Data.Common
+open System.Diagnostics.CodeAnalysis
 open FluentNHibernate.Cfg
 open FluentNHibernate.Cfg.Db
 open NHibernate
@@ -30,7 +31,7 @@ type InMemoryDbFactory(configMapping: Action<MappingConfiguration>) =
   let PatchColumn (column: ISelectable) =
     match column with
       | :? Column as c ->
-            if not (System.String.IsNullOrEmpty c.DefaultValue) then
+            if not (String.IsNullOrEmpty c.DefaultValue) then
               c.DefaultValue <- null;
             if c.SqlType = "nvarchar(max)" then
               c.SqlType <-"TEXT"
@@ -58,7 +59,7 @@ type InMemoryDbFactory(configMapping: Action<MappingConfiguration>) =
                         .BuildConfiguration() // |> PatchConfig
                         
   
-  member this.Create() =
+  member this.Create() : [<NotNull>]_=
     let sessionFactory = configuration.BuildSessionFactory()
     let dbConnection = (sessionFactory :?> ISessionFactoryImplementor).ConnectionProvider.GetConnection()
     SchemaExport(configuration).Execute(false, true, false, dbConnection, null)
