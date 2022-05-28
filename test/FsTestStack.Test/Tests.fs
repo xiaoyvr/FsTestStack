@@ -19,7 +19,7 @@ open Microsoft.AspNetCore.Builder
 let ``should be able to create a simple test server`` () =
   let apiFactory = DefaultApiFactFactory(id, (fun a -> a.MapGet("/abc", Func<_>(fun _ -> "Hello world!")) |> ignore; a))
   
-  use testServer = apiFactory.Launch(id, id)
+  use testServer = apiFactory.Launch()
   use httpClient = testServer.CreateClient()
   
   let response, body =
@@ -59,7 +59,7 @@ let ``should be able to run test for application logic`` () =
     let session = db.CreateSession()
     session.SaveOrUpdate(People("John", "Doe"))
     
-    use testServer = apiFactory.Launch(id, id)
+    use testServer = apiFactory.Launch()
                        
     use httpClient = testServer.CreateClient()
     let response, body =
@@ -86,7 +86,8 @@ let ``should be able to mock app service`` () =
     let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddTransient<IGreetings, ProdImpl>( ) |> ignore; b),
                                            fun a -> a.MapGet("/greetings", Func<_,_>(fun (s:IGreetings) -> s.Get() )  ) |> ignore; a)
     
-    use testServer = apiFactory.Launch((fun b -> b.Services.AddTransient<IGreetings, TestImpl>( ) |> ignore; b) , id)
+    
+    use testServer = apiFactory.Launch (fun b -> b.Services.AddTransient<IGreetings, TestImpl>( ) |> ignore; b)
 
     use httpClient = testServer.CreateClient()
     let response, body =

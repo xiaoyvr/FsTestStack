@@ -7,7 +7,6 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
 open Autofac
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.TestHost
 type private CustomServiceScope(scope) =
   let serviceProvider = new AutofacServiceProvider(scope)
   let mutable disposed = false
@@ -54,6 +53,7 @@ type private CustomServiceProviderFactory() =
       wrapped.CreateServiceProvider(containerBuilder)
 #endnowarn "44"
 
+open FuncConvert
 module AutofacContainer =
   let ConfigBuilder (b: WebApplicationBuilder) =
     b.Host.UseServiceProviderFactory(CustomServiceProviderFactory()) |> ignore
@@ -62,8 +62,8 @@ module AutofacContainer =
     b
 
  type AutofacApiFactFactory(configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
-        configApp: Func<WebApplication, WebApplication>) =
+                            configApp: Func<WebApplication, WebApplication>) =
    inherit ApiFactFactory<ContainerBuilder, ILifetimeScope>(
-     configBuilder.Invoke >> AutofacContainer.ConfigBuilder,
-     configApp.Invoke,
+     (DefaultFunc2 id configBuilder) >> AutofacContainer.ConfigBuilder,
+     DefaultFunc2 id configApp,
      (fun scope -> (scope :?> CustomServiceScope).Scope))
