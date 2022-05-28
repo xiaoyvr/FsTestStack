@@ -1,15 +1,10 @@
 namespace FsTestStack.AspNetCore.Default
 
+open System
 open FsTestStack.AspNetCore
+open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
 
-
-type private DefaultContainer() =
-  interface IContainerType<IServiceCollection, IServiceScope> with
-    member this.CastScope scope = scope
-    member this.ConfigBuilder b = b
-    member this.ConfigApp a  = a
-
-
- type DefaultApiFactFactory() =
-   inherit ApiFactFactory<IServiceCollection, IServiceScope>(DefaultContainer())
+ type DefaultApiFactFactory(configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
+        configApp: Func<WebApplication, WebApplication>) =
+   inherit ApiFactFactory<IServiceCollection, IServiceScope>(configBuilder.Invoke, configApp.Invoke, id)

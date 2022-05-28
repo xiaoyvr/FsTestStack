@@ -2,7 +2,6 @@
 
 open System
 open System.Data.Common
-open System.Runtime.InteropServices
 open FluentNHibernate.Cfg
 open FluentNHibernate.Cfg.Db
 open NHibernate
@@ -26,7 +25,7 @@ type InMemoryDb(sessionFactory: ISessionFactory, dbConnection: DbConnection) =
       (sessionFactory :> IDisposable).Dispose()
 
 
-type InMemoryDbFactory(configMapping: MappingConfiguration -> unit) =
+type InMemoryDbFactory(configMapping: Action<MappingConfiguration>) =
 
   let PatchColumn (column: ISelectable) =
     match column with
@@ -64,8 +63,8 @@ type InMemoryDbFactory(configMapping: MappingConfiguration -> unit) =
     let dbConnection = (sessionFactory :?> ISessionFactoryImplementor).ConnectionProvider.GetConnection()
     SchemaExport(configuration).Execute(false, true, false, dbConnection, null)
     new InMemoryDb(sessionFactory, dbConnection)
-  new (configMapping: Action<MappingConfiguration>, [<Optional>]o) = 
-    InMemoryDbFactory configMapping.Invoke
+//  new (configMapping: MappingConfiguration -> unit) = 
+//    InMemoryDbFactory (Action<_>(configMapping))
     
 
 //[<Extension>]

@@ -59,9 +59,8 @@ type IContainerType<'TContainer, 'TScope> =
   abstract member ConfigBuilder : WebApplicationBuilder -> WebApplicationBuilder
   abstract member ConfigApp : WebApplication -> WebApplication
 
-type ApiFactFactory<'TContainer, 'TScope> (containerType: IContainerType<'TContainer, 'TScope>) =
-  member this.Launch configBuilder configApp =
-    TestHttpServer.New<'TScope> (containerType.ConfigBuilder >> configBuilder) (containerType.ConfigApp >> configApp) containerType.CastScope
-
-  member this.CSLaunch (configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, configApp: Func<WebApplication, WebApplication>) =
-    this.Launch configBuilder.Invoke configApp.Invoke
+type ApiFactFactory<'TContainer, 'TScope> (configBuilder: ConfigBuilder, configApp: ConfigApp, castScope: IServiceScope -> 'TScope) =
+  member this.Launch(launchConfigBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>, launchConfigApp: Func<WebApplication, WebApplication>) =
+    TestHttpServer.New<'TScope> (configBuilder >> launchConfigBuilder.Invoke) (configApp >> launchConfigApp.Invoke) castScope
+  
+    

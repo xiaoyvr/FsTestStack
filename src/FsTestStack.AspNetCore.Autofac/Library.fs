@@ -3,6 +3,7 @@
 open System
 open Autofac.Extensions.DependencyInjection
 open FsTestStack.AspNetCore
+open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
 open Autofac
 open Microsoft.AspNetCore.Hosting
@@ -53,16 +54,16 @@ type private CustomServiceProviderFactory() =
       wrapped.CreateServiceProvider(containerBuilder)
 #endnowarn "44"
 
-type private AutofacContainer() =
-  interface IContainerType<ContainerBuilder, ILifetimeScope> with
-    member this.CastScope scope =
-      (scope :?> CustomServiceScope).Scope
-    member this.ConfigBuilder b =
-      b.Host.UseServiceProviderFactory(CustomServiceProviderFactory()) |> ignore
-      ScopeCustomizer<_, ILifetimeScope> (fun action scope -> scope.BeginLifetimeScope action)
-        |> b.Services.AddSingleton |> ignore
-      b
-    member this.ConfigApp a = a
+module AutofacContainer =
+  let ConfigBuilder (b: WebApplicationBuilder) =
+    b.Host.UseServiceProviderFactory(CustomServiceProviderFactory()) |> ignore
+    ScopeCustomizer<_, ILifetimeScope> (fun action scope -> scope.BeginLifetimeScope action)
+      |> b.Services.AddSingleton |> ignore
+    b
 
- type AutofacApiFactFactory() =
-   inherit ApiFactFactory<ContainerBuilder, ILifetimeScope>(AutofacContainer())
+ type AutofacApiFactFactory(configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
+        configApp: Func<WebApplication, WebApplication>) =
+   inherit ApiFactFactory<ContainerBuilder, ILifetimeScope>(
+     configBuilder.Invoke >> AutofacContainer.ConfigBuilder,
+     configApp.Invoke,
+     (fun scope -> (scope :?> CustomServiceScope).Scope))

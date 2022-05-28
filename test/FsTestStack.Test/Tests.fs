@@ -17,9 +17,10 @@ open Microsoft.AspNetCore.Builder
 
 [<Fact>]
 let ``should be able to create a simple test server`` () =
-  let apiFactory = DefaultApiFactFactory()
-  use testServer = apiFactory.Launch id (fun a ->
-    a.MapGet("/abc", Func<string>(fun _ -> "Hello world!")) |> ignore; a)
+  let apiFactory = DefaultApiFactFactory( (fun (w:WebApplicationBuilder) -> w),
+                                          (fun a -> a.MapGet("/abc", Func<_>(fun _ -> "Hello world!")) |> ignore; a))
+  
+  use testServer = apiFactory.Launch(id, id)
   use httpClient = testServer.CreateClient()
   
   let response, body =
@@ -51,16 +52,14 @@ let ``should be able to create an in-memory database`` () =
 [<Fact>]
 let ``should be able to run test for application logic`` () =
     
-    let apiFactory = DefaultApiFactFactory()
+    let apiFactory = DefaultApiFactFactory(id, App.Application.configApp)
     let dbFactory = InMemoryDbFactory(fun m -> m.FluentMappings.AddFromAssemblyOf<PeopleMapping>() |> ignore)
     
     use db = dbFactory.Create()
     let session = db.CreateSession()
     session.SaveOrUpdate(People("John", "Doe"))
     
-    use testServer = apiFactory.Launch
-                       (fun b -> b.Services.AddScoped<ISession>(fun sp -> db.CreateSession() ) |> ignore; b)
-                       App.Application.configApp
+    use testServer = apiFactory.Launch((fun b -> b.Services.AddScoped<ISession>(fun sp -> db.CreateSession() ) |> ignore; b), id)
                        
     use httpClient = testServer.CreateClient()
     let response, body =
