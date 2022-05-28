@@ -22,16 +22,14 @@ type private CustomServiceScope(scope) =
   interface IServiceScope with
     member this.ServiceProvider = serviceProvider
     member this.Dispose() =
-
-
       this.Dispose(true)
       GC.SuppressFinalize(this)
 
 type private CustomServiceScopeFactory(scope: ILifetimeScope) =
   interface IServiceScopeFactory with
     member this.CreateScope() =
-      let customizer = scope.Resolve<ScopeCustomizer<ContainerBuilder, ILifetimeScope>>()
-      new CustomServiceScope(customizer.Customize(scope))
+      scope.Resolve<ScopeCustomizer<ContainerBuilder, ILifetimeScope>>()
+      |> fun customizer -> new CustomServiceScope(customizer.Customize(scope))
 
 #nowarn "44"
 type private CustomServiceProviderFactory() =

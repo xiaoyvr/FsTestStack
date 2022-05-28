@@ -55,7 +55,11 @@ let ``should be able to run test for application logic`` () =
     use db = dbFactory.Create()
     
     let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddScoped<ISession>(fun sp -> db.CreateSession() ) |> ignore; b),
-                                           fun a -> a.MapGet("/people", Func<_,_>(fun (s:ISession) -> Results.Json(s.Query<People>().ToList()) )  ) |> ignore; a)
+                                           fun a ->
+                                             a.MapGet("/people", Func<_,_>(
+                                               fun (s:ISession) ->
+                                                 Results.Json(s.Query<People>().ToList()))) |> ignore
+                                             a)
     let session = db.CreateSession()
     session.SaveOrUpdate(People("John", "Doe"))
     
@@ -83,10 +87,8 @@ type TestImpl() = interface IGreetings with member x.Get() = "Greetings from Tes
 [<Fact>]
 let ``should be able to mock app service`` () =
     
-    let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddTransient<IGreetings, ProdImpl>( ) |> ignore; b),
+    let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddTransient<IGreetings, ProdImpl>() |> ignore; b),
                                            fun a -> a.MapGet("/greetings", Func<_,_>(fun (s:IGreetings) -> s.Get() )  ) |> ignore; a)
-    
-    
     use testServer = apiFactory.Launch (fun b -> b.Services.AddTransient<IGreetings, TestImpl>( ) |> ignore; b)
 
     use httpClient = testServer.CreateClient()
@@ -99,4 +101,3 @@ let ``should be able to mock app service`` () =
             
     Assert.Equal(HttpStatusCode.OK, response.StatusCode)
     Assert.Equal("Greetings from Test!", body)
-      
