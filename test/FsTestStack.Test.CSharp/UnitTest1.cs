@@ -89,9 +89,9 @@ public class UnitTest1
         Assert.NotEqual(0, people.id);
     }
 
-    private static async Task<T?> ReadFromJsonAsync<T>(HttpResponseMessage response, T? _ = default)
+    private static async Task<T> ReadFromJsonAsync<T>(HttpResponseMessage response, T? _ = default)
     {
-        return await response.Content.ReadFromJsonAsync<T>();
+        return (await response.Content.ReadFromJsonAsync<T>())!;
     }
 }
 
