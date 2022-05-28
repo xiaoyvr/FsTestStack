@@ -4,21 +4,20 @@ open System
 open System.Net
 open FsTestStack.AspNetCore.InMemoryDb
 open FsTestStack.AspNetCore.Default
+open FsTestStack.Test.App.Domain
+open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.FSharp.Core
 open NHibernate
 open Xunit
 open System.Linq
 open System.Net.Http.Json
-open FsTestStack.Test.App.Model
-open FsTestStack.Test
 open Microsoft.AspNetCore.Builder
 
 
 [<Fact>]
 let ``should be able to create a simple test server`` () =
-  let apiFactory = DefaultApiFactFactory( (fun (w:WebApplicationBuilder) -> w),
-                                          (fun a -> a.MapGet("/abc", Func<_>(fun _ -> "Hello world!")) |> ignore; a))
+  let apiFactory = DefaultApiFactFactory(id, (fun a -> a.MapGet("/abc", Func<_>(fun _ -> "Hello world!")) |> ignore; a))
   
   use testServer = apiFactory.Launch(id, id)
   use httpClient = testServer.CreateClient()
@@ -52,14 +51,15 @@ let ``should be able to create an in-memory database`` () =
 [<Fact>]
 let ``should be able to run test for application logic`` () =
     
-    let apiFactory = DefaultApiFactFactory(id, App.Application.configApp)
-    let dbFactory = InMemoryDbFactory(fun m -> m.FluentMappings.AddFromAssemblyOf<PeopleMapping>() |> ignore)
-    
+    let dbFactory = InMemoryDbFactory(fun m -> m.FluentMappings.AddFromAssemblyOf<PeopleMapping>() |> ignore)    
     use db = dbFactory.Create()
+    
+    let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddScoped<ISession>(fun sp -> db.CreateSession() ) |> ignore; b),
+                                           fun a -> a.MapGet("/people", Func<_,_>(fun (s:ISession) -> Results.Json(s.Query<People>().ToList()) )  ) |> ignore; a)
     let session = db.CreateSession()
     session.SaveOrUpdate(People("John", "Doe"))
     
-    use testServer = apiFactory.Launch((fun b -> b.Services.AddScoped<ISession>(fun sp -> db.CreateSession() ) |> ignore; b), id)
+    use testServer = apiFactory.Launch(id, id)
                        
     use httpClient = testServer.CreateClient()
     let response, body =
@@ -69,9 +69,33 @@ let ``should be able to run test for application logic`` () =
             return (response, body)
         } |> Async.AwaitTask |> Async.RunSynchronously
             
-    Assert.Equal (response.StatusCode, HttpStatusCode.OK)
+    Assert.Equal (HttpStatusCode.OK, response.StatusCode)
     let people = body[0]
     Assert.Equal("John", people.firstName)
     Assert.Equal("Doe", people.lastName)
     Assert.NotEqual(0, people.id)
-  
+    
+
+type IGreetings = abstract Get : unit -> string
+type ProdImpl() = interface IGreetings with member x.Get() = "Greetings from Prod!"
+type TestImpl() = interface IGreetings with member x.Get() = "Greetings from Test!"
+
+[<Fact>]
+let ``should be able to mock app service`` () =
+    
+    let apiFactory = DefaultApiFactFactory((fun b -> b.Services.AddTransient<IGreetings, ProdImpl>( ) |> ignore; b),
+                                           fun a -> a.MapGet("/greetings", Func<_,_>(fun (s:IGreetings) -> s.Get() )  ) |> ignore; a)
+    
+    use testServer = apiFactory.Launch((fun b -> b.Services.AddTransient<IGreetings, TestImpl>( ) |> ignore; b) , id)
+
+    use httpClient = testServer.CreateClient()
+    let response, body =
+        task {
+            let! response = httpClient.GetAsync("/greetings")
+            let! body = response.Content.ReadAsStringAsync()
+            return (response, body)
+        } |> Async.AwaitTask |> Async.RunSynchronously
+            
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode)
+    Assert.Equal("Greetings from Test!", body)
+      

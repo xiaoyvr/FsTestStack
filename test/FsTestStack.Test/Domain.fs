@@ -1,4 +1,4 @@
-namespace FsTestStack.Test.App.Model
+namespace FsTestStack.Test.App.Domain
 
 open FluentNHibernate.Mapping
 open Microsoft.FSharp.Linq.RuntimeHelpers.LeafExpressionConverter
@@ -23,5 +23,3 @@ type PeopleMapping() =
       base.Map( QuotationToLambdaExpression <@  System.Func<People, obj>(fun i -> i.FirstName)@> ) |> ignore
       base.Map( QuotationToLambdaExpression <@  System.Func<People, obj>(fun i -> i.LastName)@> ) |> ignore
       base.Not.LazyLoad()
-
-

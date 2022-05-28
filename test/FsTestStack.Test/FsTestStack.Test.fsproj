@@ -5,8 +5,7 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Model.fs" />
-    <Compile Include="Application.fs" />
+    <Compile Include="Domain.fs" />
     <Compile Include="Tests.fs" />
   </ItemGroup>
   <ItemGroup>
