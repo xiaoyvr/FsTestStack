@@ -1,22 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Runtime.InteropServices.ComTypes;
-using Autofac;
-using FluentNHibernate.Cfg;
-using FsTestStack.AspNetCore;
-using FsTestStack.AspNetCore.Autofac;
 using FsTestStack.AspNetCore.Default;
 using FsTestStack.AspNetCore.InMemoryDb;
 using FsTestStack.Test.CSharp.Domains;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.FSharp.Core;
-using Microsoft.FSharp.Core.CompilerServices;
-using NHibernate.Mapping.ByCode;
-using static FsTestStack.AspNetCore.Configurators;
 using static FsTestStack.AspNetCore.FuncConvert;
-using FuncConvert = FsTestStack.AspNetCore.FuncConvert;
 using ISession = NHibernate.ISession;
 
 namespace FsTestStack.Test.CSharp;
