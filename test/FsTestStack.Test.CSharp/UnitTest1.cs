@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using FsTestStack.AspNetCore.Autofac;
 using FsTestStack.AspNetCore.Default;
 using FsTestStack.AspNetCore.InMemoryDb;
 using FsTestStack.Test.CSharp.Domains;
@@ -18,6 +19,28 @@ public class UnitTest1
     {
 
         var apiFactory = new DefaultApiFactFactory(FuncId, a =>
+            {
+                a.MapGet("/abc", () => "Hello world!");
+                return a;
+            }
+        );
+
+        using var testServer = apiFactory.Launch();
+        using var httpClient = testServer.CreateClient();
+
+        var response = await httpClient.GetAsync("/abc");
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        
+        Assert.Equal("Hello world!", body);
+    }
+    
+    [Fact]
+    public async void should_be_able_to_create_a_simple_test_server_for_autofac()
+    {
+
+        var apiFactory = new AutofacApiFactFactory(FuncId, a =>
             {
                 a.MapGet("/abc", () => "Hello world!");
                 return a;
@@ -63,7 +86,7 @@ public class UnitTest1
 
         var apiFactory = new DefaultApiFactFactory(b =>
         {
-            b.Services.AddScoped<ISession>(sp => db.CreateSession());
+            b.Services.AddScoped<ISession>(_ => db.CreateSession());
             return b;
         }, a =>
         {

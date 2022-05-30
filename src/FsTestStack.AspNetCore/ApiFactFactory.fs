@@ -45,8 +45,8 @@ type ConfigBuilder = WebApplicationBuilder -> WebApplicationBuilder
 type ConfigApp = WebApplication -> WebApplication
 
 module private TestHttpServer =
-  let New<'TScope> (configBuilder: ConfigBuilder) (configApp: ConfigApp) castScope =
-    WebApplication.CreateBuilder()
+  let New<'TScope> (options:WebApplicationOptions) (configBuilder: ConfigBuilder) (configApp: ConfigApp) castScope =
+    WebApplication.CreateBuilder options
     |> (fun b ->
       b.WebHost.UseTestServer() |> ignore
       b.Logging.AddFilter<ConsoleLoggerProvider>(fun lb -> lb >= LogLevel.Warning) |> ignore
@@ -82,8 +82,11 @@ module FuncConvert =
   
 open FuncConvert
 
-type ApiFactFactory<'TContainer, 'TScope> (configBuilder: ConfigBuilder, configApp: ConfigApp, castScope: IServiceScope -> 'TScope) =
+type ApiFactFactory<'TContainer, 'TScope> (configBuilder: ConfigBuilder, configApp: ConfigApp, castScope: IServiceScope -> 'TScope, options) =
   member this.Launch([<Optional>]launchConfigBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
                      [<Optional>]launchConfigApp: Func<WebApplication, WebApplication>) : [<NotNull>]_=
-    TestHttpServer.New<'TScope> (configBuilder >> (DefaultFunc2 id launchConfigBuilder)) (configApp >> (DefaultFunc2 id launchConfigApp)) castScope
+    TestHttpServer.New<'TScope>
+      (defaultArg options (WebApplicationOptions()) )
+      (configBuilder >> (DefaultFunc2 id launchConfigBuilder))
+      (configApp >> (DefaultFunc2 id launchConfigApp)) castScope
   

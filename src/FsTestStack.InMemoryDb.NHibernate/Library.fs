@@ -53,17 +53,18 @@ type InMemoryDbFactory(configMapping: Action<MappingConfiguration>) =
                         .Database(SQLiteConfiguration
                                     .Standard
                                     .InMemory()
-                                    .ConnectionString("Data Source=:memory:;Version=3;New=True;DateTimeFormatString=yyyy-MM-dd HH:mm:ss.FFFFFFF;"))
+                                    .ConnectionString("Data Source=:memory:;Version=3;New=True;DateTimeFormatString=yyyy-MM-dd HH:mm:ss.FFFFFFF;BinaryGUID=False;"))
                         .Mappings(configMapping)
                         .BuildConfiguration() // |> PatchConfig
-                        
-  
+
   member this.Create() : [<NotNull>]_=
-    let sessionFactory = configuration.BuildSessionFactory()
+    let sessionFactory = lock configuration (fun () ->
+      configuration.BuildSessionFactory()
+    )
     let dbConnection = (sessionFactory :?> ISessionFactoryImplementor).ConnectionProvider.GetConnection()
     SchemaExport(configuration).Execute(false, true, false, dbConnection, null)
     new InMemoryDb(sessionFactory, dbConnection)
-
+    
 //[<Extension>]
 //type Extensions =
 //  [<Extension>]

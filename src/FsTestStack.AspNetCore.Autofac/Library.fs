@@ -1,6 +1,7 @@
 ﻿namespace FsTestStack.AspNetCore.Autofac
 
 open System
+open System.Runtime.InteropServices
 open Autofac.Extensions.DependencyInjection
 open FsTestStack.AspNetCore
 open Microsoft.AspNetCore.Builder
@@ -60,8 +61,10 @@ module AutofacContainer =
     b
 
  type AutofacApiFactFactory(configBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,
-                            configApp: Func<WebApplication, WebApplication>) =
+                            configApp: Func<WebApplication, WebApplication>,
+                            [<Optional>]options: WebApplicationOptions option) =
    inherit ApiFactFactory<ContainerBuilder, ILifetimeScope>(
-     (DefaultFunc2 id configBuilder) >> AutofacContainer.ConfigBuilder,
+     AutofacContainer.ConfigBuilder >> (DefaultFunc2 id configBuilder),
      DefaultFunc2 id configApp,
-     (fun scope -> (scope :?> CustomServiceScope).Scope))
+     (fun scope -> (scope :?> CustomServiceScope).Scope),
+     options)
