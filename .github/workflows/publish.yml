@@ -28,6 +28,6 @@ jobs:
       env: 
         NUGET_KEY : ${{ secrets.NUGET_KEY }}
       run: |
-        version=$(dotnet nbgv get-version -v Version)
-        dotnet pack -p:PackageVersion=$version --no-build -o build/ src/FsTestStack.AspNetCore/FsTestStack.AspNetCore.fsproj
-        dotnet nuget push -s https://api.nuget.org/v3/index.json -k $NUGET_KEY build/FsTestStack.AspNetCore.${version}.nupkg
+        rm -rf build/
+        dotnet pack -o build/
+        dotnet nuget push -s https://api.nuget.org/v3/index.json -k $NUGET_KEY "build/*.nupkg"

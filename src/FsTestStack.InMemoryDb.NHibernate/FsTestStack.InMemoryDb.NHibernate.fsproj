@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>FsTestStack.InMemoryDb.NHibernate</PackageId>
+    <PackageProjectUrl>https://github.com/xiaoyvr/FsTestStack</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/xiaoyvr/FsTestStack</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Library.fs" />
