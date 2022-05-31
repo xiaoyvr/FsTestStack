@@ -1,13 +1,15 @@
 ﻿namespace FsTestStack.AspNetCore.Autofac
 
+
 open System
 open System.Runtime.InteropServices
+open Autofac
 open Autofac.Extensions.DependencyInjection
 open FsTestStack.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
-open Autofac
 open Microsoft.AspNetCore.Hosting
+
 type private CustomServiceScope(scope) =
   let serviceProvider = new AutofacServiceProvider(scope)
   let mutable disposed = false
