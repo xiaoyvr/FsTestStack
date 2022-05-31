@@ -30,4 +30,4 @@ jobs:
       run: |
         rm -rf build/
         dotnet pack -o build/
-        dotnet nuget push -s https://api.nuget.org/v3/index.json -k $NUGET_KEY "build/*.nupkg"
+        dotnet nuget push build/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_KEY"
