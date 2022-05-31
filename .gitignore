@@ -7,7 +7,6 @@ bin/
 obj/
 
 # Paket dependency manager
-.paket/
 paket-files/
 
 /build
