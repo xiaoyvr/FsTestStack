@@ -1,4 +1,5 @@
 using FluentNHibernate.Mapping;
+using NHibernate;
 
 namespace FsTestStack.Test.CSharp.Domains;
 
@@ -25,5 +26,20 @@ public class PeopleMapping : ClassMap<People>
         Id(p => p.Id);
         Map(p => p.FirstName);
         Map(p => p.LastName);
+    }
+}
+
+public class PeopleService
+{
+    private readonly ISession session;
+
+    public PeopleService(ISession session)
+    {
+        this.session = session;
+    }
+
+    public List<People> GetAll()
+    {
+        return session.Query<People>().ToList();
     }
 }
