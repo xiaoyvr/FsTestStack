@@ -11,6 +11,7 @@ open Microsoft.AspNetCore.Hosting.Server
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.Console
 open Microsoft.FSharp.Core
+open FuncUtil
 
 type ScopeCustomizer<'TContainer, 'TScope> (newScope) =
   let customizeList = System.Collections.Generic.List<'TContainer -> unit>();
@@ -56,31 +57,6 @@ module private TestHttpServer =
     |> (fun h ->
         h.Start()
         new TestHttpServer<'TScope>(h, castScope))
-    
-module Configurators =
-  [<NotNull>]
-  let ConfigServices (config: Action<IServiceCollection>) : Func<WebApplicationBuilder, WebApplicationBuilder> =
-    Func<_,_>(fun (b:WebApplicationBuilder) -> config.Invoke(b.Services); b)
-
-module FuncConvert =  
-  let rec Compose<'T1> (funcList: ('T1 -> 'T1) list) =
-    match funcList with
-      | [] -> id
-      | x :: xs -> x >> Compose xs
-      
-  [<NotNull>]
-  let ComposeFunc<'T1> ([<ParamArray>]funcArray: Func<'T1, 'T1> array)=
-    funcArray
-    |> List.ofArray
-    |> List.map (fun func -> func.Invoke)
-    |> Compose
-    |> fun t1 -> Func<'T1,'T1>(t1)
-    
-  let DefaultFunc2 def (func:Func<_, _>)  =
-    match func with null -> def | _ -> func.Invoke
-  let FuncId<'T>(w:'T) :'T = w;
-  
-open FuncConvert
 
 type ApiFactFactory<'TContainer, 'TScope> (configBuilder: ConfigBuilder, configApp: ConfigApp, castScope: IServiceScope -> 'TScope, options) =
   member this.Launch([<Optional>]launchConfigBuilder: Func<WebApplicationBuilder, WebApplicationBuilder>,

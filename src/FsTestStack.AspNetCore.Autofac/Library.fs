@@ -9,6 +9,8 @@ open FsTestStack.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.AspNetCore.Hosting
+open FsTestStack.AspNetCore.FuncUtil
+
 
 type private CustomServiceScope(scope) =
   let serviceProvider = new AutofacServiceProvider(scope)
@@ -54,7 +56,6 @@ type private CustomServiceProviderFactory() =
       wrapped.CreateServiceProvider(containerBuilder)
 #endnowarn "44"
 
-open FuncConvert
 module AutofacContainer =
   let ConfigBuilder (b: WebApplicationBuilder) =
     b.Host.UseServiceProviderFactory(CustomServiceProviderFactory()) |> ignore
